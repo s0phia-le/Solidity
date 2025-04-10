@@ -1,0 +1,12 @@
+{
+	"folders": [
+		{
+			"path": "../.."
+		},
+		{
+			"name": "Solidity",
+			"path": "../../Solidity"
+		}
+	],
+	"settings": {}
+}
