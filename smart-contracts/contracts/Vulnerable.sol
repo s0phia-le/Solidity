@@ -16,4 +16,8 @@ contract Vulnerable {
         require(success, "Failed to send Ether");
         balances[msg.sender] -= amount;
     }
+
+    function getBalance() public view returns (uint256) {
+        return address(this).balance;
+    }
 }
