@@ -7,6 +7,7 @@ async function main() {
 
     // Deploy vulnerable contract
     const vul = await Vulnerable.deploy();
+    await vul.deployTransaction.wait();  // Wait for the deployment transaction to be mined
     console.log(`Vulnerable contract deployed at: ${vul.address}`);
 
     if (!vul.address) {
@@ -14,37 +15,15 @@ async function main() {
         return;
     }
 
-    // Wait for the deployment transaction to be mined (if it's successful)
-    try {
-        await vul.deployTransaction.wait();
-        console.log("Vulnerable contract deployed and transaction confirmed");
-    } catch (err) {
-        console.error("Error waiting for Vulnerable contract deployment:", err);
-        return;
-    }
-
     // Deploy attacker contract
     const attackerContract = await Attacker.deploy(vul.address);
+    await attackerContract.deployTransaction.wait(); // Wait for the attacker contract deployment transaction to be mined
     console.log(`Attacker contract deployed at: ${attackerContract.address}`);
-
-    if (!attackerContract.address) {
-        console.error("Failed to deploy Attacker contract. Address is undefined.");
-        return;
-    }
-
-    // Wait for the deployment transaction to be mined (if it's successful)
-    try {
-        await attackerContract.deployTransaction.wait();
-        console.log("Attacker contract deployed and transaction confirmed");
-    } catch (err) {
-        console.error("Error waiting for Attacker contract deployment:", err);
-        return;
-    }
 
     // Send 10 ETH to the vulnerable contract from the deployer
     const tx = await deployer.sendTransaction({
         to: vul.address,
-        value: hre.ethers.parseEther("10")
+        value: ethers.utils.parseEther("10")
     });
     await tx.wait();
     console.log("Funded 10 ETH to vulnerable contract");
@@ -55,12 +34,12 @@ async function main() {
     const vulBalanceBefore = await provider.getBalance(vul.address);
     const attBalanceBefore = await provider.getBalance(attacker.address);
     console.log("Before attack:");
-    console.log("Vulnerable balance:", hre.ethers.formatEther(vulBalanceBefore), "ETH");
-    console.log("Attacker Balance:", hre.ethers.formatEther(attBalanceBefore), "ETH");
+    console.log("Vulnerable balance:", ethers.utils.formatEther(vulBalanceBefore), "ETH");
+    console.log("Attacker Balance:", ethers.utils.formatEther(attBalanceBefore), "ETH");
 
     // Execute the attack
-    const attackTx = await attackerContract.attack({
-        value: hre.ethers.parseEther("1"),
+    const attackTx = await attackerContract.connect(attacker).attack({
+        value: ethers.utils.parseEther("1"),
         gasLimit: 1000000  // Increased gas limit for reentrancy
     });
     await attackTx.wait();
@@ -70,8 +49,8 @@ async function main() {
     const vulBalanceAfter = await provider.getBalance(vul.address);
     const attBalanceAfter = await provider.getBalance(attacker.address);
     console.log("After attack:");
-    console.log("Vulnerable balance:", hre.ethers.formatEther(vulBalanceAfter), "ETH");
-    console.log("Attacker Balance:", hre.ethers.formatEther(attBalanceAfter), "ETH");
+    console.log("Vulnerable balance:", ethers.utils.formatEther(vulBalanceAfter), "ETH");
+    console.log("Attacker Balance:", ethers.utils.formatEther(attBalanceAfter), "ETH");
 }
 
 main().catch((error) => {
